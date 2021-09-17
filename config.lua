@@ -1,19 +1,17 @@
 Config = {}
 
--- # Locale to be used. You can create your own by simple copying the 'en' and translating the values.
-Config.Locale       				= 'en' -- Traduções disponives en / br
+Config.Locale = 'en' -- Language to be used
 
--- # By how many services a player's community service gets extended if he tries to escape
-Config.ServiceExtensionOnEscape		= 8
+Config.ServiceExtensionOnEscape	= 5 -- How many services a player's community service gets extended if they tries to escape
 
--- # Don't change this unless you know what you are doing.
-Config.ServiceLocation 				= {x =  170.43, y = -990.7, z = 30.09}
+Config.MaxDistance = 100
 
--- # Don't change this unless you know what you are doing.
-Config.ReleaseLocation				= {x = 427.33, y = -979.51, z = 30.2}
+Config.ServiceLocation 	= vector3(170.43, -990.70, 30.09) -- Where the player will be sent to do the community service
+Config.ReleaseLocation = vector3(427.33, -979.51, 30.20) -- Where the player will be returned after they finish community service
 
+Config.CleaningModel = 'prop_tool_broom'
+Config.GardeningModel = 'bkr_prop_coke_spatula_04'
 
--- # Don't change this unless you know what you are doing.
 Config.ServiceLocations = {
 	{ type = "cleaning", coords = vector3(170.0, -1006.0, 29.34) },
 	{ type = "cleaning", coords = vector3(177.0, -1007.94, 29.33) },
@@ -30,26 +28,26 @@ Config.ServiceLocations = {
 	{ type = "gardening", coords = vector3(201.47, -1004.37, 29.29) }
 }
 
-
-
 Config.Uniforms = {
 	prison_wear = {
 		male = {
 			['tshirt_1'] = 15,  ['tshirt_2'] = 0,
 			['torso_1']  = 146, ['torso_2']  = 0,
 			['decals_1'] = 0,   ['decals_2'] = 0,
-			['arms']     = 119, ['pants_1']  = 3,
-			['pants_2']  = 7,   ['shoes_1']  = 12,
-			['shoes_2']  = 12,  ['chain_1']  = 0,
+			['bproof_1'] = 0,   ['bproof_2'] = 0,
+			['arms']     = 63, ['pants_1']  = 3,
+			['pants_2']  = 7,   ['shoes_1']  = 7,
+			['shoes_2']  = 0,  ['chain_1']  = 0,
 			['chain_2']  = 0
 		},
 		female = {
 			['tshirt_1'] = 3,   ['tshirt_2'] = 0,
-			['torso_1']  = 38,  ['torso_2']  = 3,
+			['torso_1']  = 0,  ['torso_2']  =0,
 			['decals_1'] = 0,   ['decals_2'] = 0,
-			['arms']     = 120,  ['pants_1'] = 3,
-			['pants_2']  = 15,  ['shoes_1']  = 66,
-			['shoes_2']  = 5,   ['chain_1']  = 0,
+			['bproof_1'] = 0,   ['bproof_2'] = 0,
+			['arms']     = 72,  ['pants_1'] = 3,
+			['pants_2']  = 15,  ['shoes_1']  = 36,
+			['shoes_2']  = 0,   ['chain_1']  = 0,
 			['chain_2']  = 0
 		}
 	}

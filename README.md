@@ -1,4 +1,4 @@
-# ESX_CommunityService
+# szi_communityservice
 
 An alternative form of punishment and social correction to jail. With this script, you can now send criminals in the central square, to provide community service by cleaning and gardening. Try to escape it and you will get your service extended!
 
@@ -13,24 +13,24 @@ An alternative form of punishment and social correction to jail. With this scrip
 ### Using Git
 ```
 cd resources
-git clone https://github.com/apoiat/esx_communityservice [esx]/esx_communityservice
+git clone https://github.com/Sub-Zero-Interactive/szi_communityservice [esx]/szi_communityservice
 ```
 
 ### Manually
-- Download https://github.com/apoiat/esx_communityservice/archive/master.zip
+- Download https://github.com/Sub-Zero-Interactive/szi_communityservice/master.zip
 - Put it in the `[esx]` directory
 
 
 ## Installation
-- Import `esx_communityservice.sql` in your database
+- Import `szi_communityservice.sql` in your database
 - Add this in your server.cfg :
 
 ```
-start esx_communityservice
+start szi_communityservice
 ```
 ## How to apply community service.
 
-- Use the `esx_communityservice:sendToCommunityService(target, service_count)` server trigger.
+- Use the `szi_communityservice:sendToCommunityService(target, service_count)` server trigger.
 - Use the `/comserv player_id service_count` command (only admins).
 - Use the `/endcomserv player_id` to finish a player's community service (only admins).
 
@@ -68,7 +68,7 @@ function SendToCommunityService(player)
 		if community_services_count == nil then
 			ESX.ShowNotification('Invalid services count.')
 		else
-			TriggerServerEvent("esx_communityservice:sendToCommunityService", player, community_services_count)
+			TriggerServerEvent("szi_communityservice:sendToCommunityService", player, community_services_count)
 			menu.close()
 		end
 	end, function (data2, menu)
@@ -80,7 +80,7 @@ end
 
 # Legal
 ### License
-ESX_CommunityService - A community service script for fivem servers.
+szi_communityservice - A community service script for fivem servers.
 
 Copyright (C) 2018-2019 Apostolos Iatridis
 

@@ -2,57 +2,49 @@ ESX = nil
 
 TriggerEvent('esx:getSharedObject', function(obj) ESX = obj end)
 
+RegisterCommand('comserv', function(source, args, user)
+	local xPlayer = ESX.GetPlayerFromId(source)
 
-TriggerEvent('es:addGroupCommand', 'comserv', 'admin', function(source, args, user)
-	if args[1] and GetPlayerName(args[1]) ~= nil and tonumber(args[2]) then
-		TriggerEvent('szi_communitycervice:sendToCommunityService', tonumber(args[1]), tonumber(args[2]))
-	else
-		TriggerClientEvent('chat:addMessage', source, { args = { _U('system_msn'), _U('invalid_player_id_or_actions') } } )
-	end
-end, function(source, args, user)
-	TriggerClientEvent('chat:addMessage', source, { args = { _U('system_msn'), _U('insufficient_permissions') } })
-end, {help = _U('give_player_community'), params = {{name = "id", help = _U('target_id')}, {name = "actions", help = _U('action_count_suggested')}}})
-_U('system_msn')
-
-
-TriggerEvent('es:addGroupCommand', 'endcomserv', 'admin', function(source, args, user)
-	if args[1] then
-		if GetPlayerName(args[1]) ~= nil then
-			TriggerEvent('szi_communitycervice:endCommunityServiceCommand', tonumber(args[1]))
+	if xPlayer.job.name == 'police' then
+		if args[1] and GetPlayerName(args[1]) ~= nil and tonumber(args[2]) then
+			TriggerEvent('szi_communityservice:sendToCommunityService', tonumber(args[1]), tonumber(args[2]))
 		else
-			TriggerClientEvent('chat:addMessage', source, { args = { _U('system_msn'), _U('invalid_player_id')  } } )
+			TriggerClientEvent('chat:addMessage', source, { args = { _U('system_msn'), _U('invalid_player_id_or_actions') } } )
 		end
-	else
-		TriggerEvent('szi_communitycervice:endCommunityServiceCommand', source)
 	end
-end, function(source, args, user)
-	TriggerClientEvent('chat:addMessage', source, { args = { _U('system_msn'), _U('insufficient_permissions') } })
-end, {help = _U('unjail_people'), params = {{name = "id", help = _U('target_id')}}})
+end)
 
+RegisterCommand('endcomserv', function(source, args, user)
+	local xPlayer = ESX.GetPlayerFromId(source)
 
+	if xPlayer.job.name == 'police' then
+		if args[1] then
+			if GetPlayerName(args[1]) ~= nil then
+				TriggerEvent('szi_communityservice:endCommunityServiceCommand', tonumber(args[1]))
+			else
+				TriggerClientEvent('chat:addMessage', source, { args = { _U('system_msn'), _U('invalid_player_id')  } } )
+			end
+		else
+			TriggerEvent('szi_communityservice:endCommunityServiceCommand', source)
+		end
+	end
+end)
 
-
-
-RegisterServerEvent('szi_communitycervice:endCommunityServiceCommand')
-AddEventHandler('szi_communitycervice:endCommunityServiceCommand', function(source)
+RegisterServerEvent('szi_communityservice:endCommunityServiceCommand')
+AddEventHandler('szi_communityservice:endCommunityServiceCommand', function(source)
 	if source ~= nil then
 		releaseFromCommunityService(source)
 	end
 end)
 
 -- unjail after time served
-RegisterServerEvent('szi_communitycervice:finishCommunityService')
-AddEventHandler('szi_communitycervice:finishCommunityService', function()
+RegisterServerEvent('szi_communityservice:finishCommunityService')
+AddEventHandler('szi_communityservice:finishCommunityService', function()
 	releaseFromCommunityService(source)
 end)
 
-
-
-
-
-RegisterServerEvent('szi_communitycervice:completeService')
-AddEventHandler('szi_communitycervice:completeService', function()
-
+RegisterServerEvent('szi_communityservice:completeService')
+AddEventHandler('szi_communityservice:completeService', function()
 	local _source = source
 	local identifier = GetPlayerIdentifiers(_source)[1]
 
@@ -65,17 +57,13 @@ AddEventHandler('szi_communitycervice:completeService', function()
 				['@identifier'] = identifier
 			})
 		else
-			print ("szi_communitycervice :: Problem matching player identifier in database to reduce actions.")
+			print ("szi_communityservice :: Problem matching player identifier in database to reduce actions.")
 		end
 	end)
 end)
 
-
-
-
-RegisterServerEvent('szi_communitycervice:extendService')
-AddEventHandler('szi_communitycervice:extendService', function()
-
+RegisterServerEvent('szi_communityservice:extendService')
+AddEventHandler('szi_communityservice:extendService', function()
 	local _source = source
 	local identifier = GetPlayerIdentifiers(_source)[1]
 
@@ -89,19 +77,14 @@ AddEventHandler('szi_communitycervice:extendService', function()
 				['@extension_value'] = Config.ServiceExtensionOnEscape
 			})
 		else
-			print ("szi_communitycervice :: Problem matching player identifier in database to reduce actions.")
+			print ("szi_communityservice :: Problem matching player identifier in database to reduce actions.")
 		end
 	end)
 end)
 
-
-
-
-
-
-RegisterServerEvent('szi_communitycervice:sendToCommunityService')
-AddEventHandler('szi_communitycervice:sendToCommunityService', function(target, actions_count)
-
+RegisterServerEvent('szi_communityservice:sendToCommunityService')
+AddEventHandler('szi_communityservice:sendToCommunityService', function(target, actions_count)
+	local xPlayer = ESX.GetPlayerFromId(target)
 	local identifier = GetPlayerIdentifiers(target)[1]
 
 	MySQL.Async.fetchAll('SELECT * FROM communityservice WHERE identifier = @identifier', {
@@ -120,30 +103,13 @@ AddEventHandler('szi_communitycervice:sendToCommunityService', function(target, 
 		end
 	end)
 
-	TriggerClientEvent('chat:addMessage', -1, { args = { _U('judge'), _U('comserv_msg', GetPlayerName(target), actions_count) }, color = { 147, 196, 109 } })
+	TriggerClientEvent('chat:addMessage', -1, { args = { _U('judge'), _U('comserv_msg', xPlayer.getName(target), actions_count) }, color = { 147, 196, 109 } })
 	TriggerClientEvent('esx_policejob:unrestrain', target)
-	TriggerClientEvent('szi_communitycervice:inCommunityService', target, actions_count)
+	TriggerClientEvent('szi_communityservice:inCommunityService', target, actions_count)
 end)
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-RegisterServerEvent('szi_communitycervice:checkIfSentenced')
-AddEventHandler('szi_communitycervice:checkIfSentenced', function()
+RegisterServerEvent('szi_communityservice:checkIfSentenced')
+AddEventHandler('szi_communityservice:checkIfSentenced', function()
 	local _source = source -- cannot parse source to client trigger for some weird reason
 	local identifier = GetPlayerIdentifiers(_source)[1] -- get steam identifier
 
@@ -152,19 +118,13 @@ AddEventHandler('szi_communitycervice:checkIfSentenced', function()
 	}, function(result)
 		if result[1] ~= nil and result[1].actions_remaining > 0 then
 			--TriggerClientEvent('chat:addMessage', -1, { args = { _U('judge'), _U('jailed_msg', GetPlayerName(_source), ESX.Math.Round(result[1].jail_time / 60)) }, color = { 147, 196, 109 } })
-			TriggerClientEvent('szi_communitycervice:inCommunityService', _source, tonumber(result[1].actions_remaining))
+			TriggerClientEvent('szi_communityservice:inCommunityService', _source, tonumber(result[1].actions_remaining))
 		end
 	end)
 end)
 
-
-
-
-
-
-
 function releaseFromCommunityService(target)
-
+	local xPlayer = ESX.GetPlayerFromId(target)
 	local identifier = GetPlayerIdentifiers(target)[1]
 	MySQL.Async.fetchAll('SELECT * FROM communityservice WHERE identifier = @identifier', {
 		['@identifier'] = identifier
@@ -174,9 +134,9 @@ function releaseFromCommunityService(target)
 				['@identifier'] = identifier
 			})
 
-			TriggerClientEvent('chat:addMessage', -1, { args = { _U('judge'), _U('comserv_finished', GetPlayerName(target)) }, color = { 147, 196, 109 } })
+			TriggerClientEvent('chat:addMessage', -1, { args = { _U('judge'), _U('comserv_finished', xPlayer.getName(target)) }, color = { 147, 196, 109 } })
 		end
 	end)
 
-	TriggerClientEvent('szi_communitycervice:finishCommunityService', target)
+	TriggerClientEvent('szi_communityservice:finishCommunityService', target)
 end
