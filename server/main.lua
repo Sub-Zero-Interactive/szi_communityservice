@@ -2,33 +2,30 @@ ESX = nil
 
 TriggerEvent('esx:getSharedObject', function(obj) ESX = obj end)
 
-RegisterCommand('comserv', function(source, args, user)
-	local xPlayer = ESX.GetPlayerFromId(source)
-
+ESX.RegisterCommand('comserv', 'admin', function(xPlayer, args, showError)
 	if xPlayer.job.name == 'police' then
-		if args[1] and GetPlayerName(args[1]) ~= nil and tonumber(args[2]) then
-			TriggerEvent('szi_communityservice:sendToCommunityService', tonumber(args[1]), tonumber(args[2]))
+		if args.id ~= nil and args.amount ~= nil then
+			TriggerEvent('szi_communityservice:sendToCommunityService', args.id.source, args.amount)
 		else
-			TriggerClientEvent('chat:addMessage', source, { args = { _U('system_msn'), _U('invalid_player_id_or_actions') } } )
+			TriggerClientEvent('chat:addMessage', xPlayer.source, { args = { _U('system_msn'), _U('invalid_player_id_or_actions') } } )
 		end
 	end
-end)
+end, true, {help = "Sends a player to community service.", validate = true, arguments = {
+	{name = "id", help = _U('target_id'), type = 'player'},
+	{name = 'amount', help = "amount of comserv", type = 'number'}
+}})
 
-RegisterCommand('endcomserv', function(source, args, user)
-	local xPlayer = ESX.GetPlayerFromId(source)
-
+ESX.RegisterCommand('endcomserv', 'admin', function(xPlayer, args, showError)
 	if xPlayer.job.name == 'police' then
-		if args[1] then
-			if GetPlayerName(args[1]) ~= nil then
-				TriggerEvent('szi_communityservice:endCommunityServiceCommand', tonumber(args[1]))
-			else
-				TriggerClientEvent('chat:addMessage', source, { args = { _U('system_msn'), _U('invalid_player_id')  } } )
-			end
+		if args.id ~= nil then
+			TriggerEvent('szi_communityservice:endCommunityServiceCommand', args.id.source)
 		else
-			TriggerEvent('szi_communityservice:endCommunityServiceCommand', source)
+			TriggerEvent('szi_communityservice:endCommunityServiceCommand', xPlayer.source)
 		end
 	end
-end)
+end, true, {help = "Removes a player from community service.", validate = false, arguments = {
+	{name = "id", help = _U('target_id'), type = 'player'}
+}})
 
 RegisterServerEvent('szi_communityservice:endCommunityServiceCommand')
 AddEventHandler('szi_communityservice:endCommunityServiceCommand', function(source)
@@ -117,7 +114,6 @@ AddEventHandler('szi_communityservice:checkIfSentenced', function()
 		['@identifier'] = identifier
 	}, function(result)
 		if result[1] ~= nil and result[1].actions_remaining > 0 then
-			--TriggerClientEvent('chat:addMessage', -1, { args = { _U('judge'), _U('jailed_msg', GetPlayerName(_source), ESX.Math.Round(result[1].jail_time / 60)) }, color = { 147, 196, 109 } })
 			TriggerClientEvent('szi_communityservice:inCommunityService', _source, tonumber(result[1].actions_remaining))
 		end
 	end)
