@@ -2,7 +2,7 @@ ESX = nil
 
 TriggerEvent('esx:getSharedObject', function(obj) ESX = obj end)
 
-ESX.RegisterCommand('comserv', 'admin', function(xPlayer, args, showError)
+ESX.RegisterCommand('comserv', 'user', function(xPlayer, args, showError)
 	if xPlayer.job.name == 'police' then
 		if args.id ~= nil and args.amount ~= nil then
 			TriggerEvent('szi_communityservice:sendToCommunityService', args.id.source, args.amount)
@@ -15,7 +15,7 @@ end, true, {help = "Sends a player to community service.", validate = true, argu
 	{name = 'amount', help = "amount of comserv", type = 'number'}
 }})
 
-ESX.RegisterCommand('endcomserv', 'admin', function(xPlayer, args, showError)
+ESX.RegisterCommand('endcomserv', 'user', function(xPlayer, args, showError)
 	if xPlayer.job.name == 'police' then
 		if args.id ~= nil then
 			TriggerEvent('szi_communityservice:endCommunityServiceCommand', args.id.source)
@@ -37,7 +37,8 @@ end)
 -- unjail after time served
 RegisterServerEvent('szi_communityservice:finishCommunityService')
 AddEventHandler('szi_communityservice:finishCommunityService', function()
-	releaseFromCommunityService(source)
+	local _source = source
+	releaseFromCommunityService(_source)
 end)
 
 RegisterServerEvent('szi_communityservice:completeService')
@@ -53,8 +54,6 @@ AddEventHandler('szi_communityservice:completeService', function()
 			MySQL.Async.execute('UPDATE communityservice SET actions_remaining = actions_remaining - 1 WHERE identifier = @identifier', {
 				['@identifier'] = identifier
 			})
-		else
-			print ("szi_communityservice :: Problem matching player identifier in database to reduce actions.")
 		end
 	end)
 end)
@@ -73,8 +72,6 @@ AddEventHandler('szi_communityservice:extendService', function()
 				['@identifier'] = identifier,
 				['@extension_value'] = Config.ServiceExtensionOnEscape
 			})
-		else
-			print ("szi_communityservice :: Problem matching player identifier in database to reduce actions.")
 		end
 	end)
 end)
@@ -133,6 +130,5 @@ function releaseFromCommunityService(target)
 			TriggerClientEvent('chat:addMessage', -1, { args = { _U('judge'), _U('comserv_finished', xPlayer.getName(target)) }, color = { 147, 196, 109 } })
 		end
 	end)
-
 	TriggerClientEvent('szi_communityservice:finishCommunityService', target)
 end

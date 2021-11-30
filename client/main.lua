@@ -9,12 +9,9 @@ end)
 
 local communityServiceFinished, isSentenced, disable_actions = false, false, false
 local cleaning_net, gardening_net = nil, nil
-
 local actionsRemaining = 0
 local availableActions = {}
-
-local cleaningmodel = Config.CleaningModel
-local gardeningmodel = Config.GardeningModel
+local cleaningmodel, gardeningmodel = Config.CleaningModel, Config.GardeningModel
 
 Citizen.CreateThread(function()
 	Citizen.Wait(2000) --Wait for mysql-async
@@ -51,20 +48,18 @@ AddEventHandler('szi_communityservice:inCommunityService', function(actions_rema
 	end
 	actionsRemaining = actions_remaining
 	FillActionTable()
-	print(":: Available Actions: " .. #availableActions)
 	ApplyPrisonerSkin()
 	ESX.Game.Teleport(playerPed, Config.ServiceLocation)
 	isSentenced = true
 	communityServiceFinished = false
 
 	while actionsRemaining > 0 and communityServiceFinished ~= true do
-		if IsPedInAnyVehicle(playerPed, false) then
-			ClearPedTasksImmediately(playerPed)
-		end
-
 		Citizen.Wait(20000)
 
-		if distance <= Config.MaxDistance then
+		if GetDistanceBetweenCoords(coords, Config.ServiceLocation.x, Config.ServiceLocation.y, Config.ServiceLocation.z) > Config.MaxDistance then
+			if IsPedInAnyVehicle(playerPed, false) then
+				ClearPedTasksImmediately(playerPed)
+			end
 			ESX.Game.Teleport(playerPed, Config.ServiceLocation)
 			TriggerEvent('chat:addMessage', { args = { _U('judge'), _U('escape_attempt') }, color = { 147, 196, 109 } })
 			TriggerServerEvent('szi_communityservice:extendService')
@@ -99,38 +94,37 @@ Citizen.CreateThread(function()
 			DisableViolentActions()
 
 			local pCoords = GetEntityCoords(PlayerPedId())
-
 			for i = 1, #availableActions do
 				local distance = #(pCoords - availableActions[i].coords)
 				if distance < 1.5 then
 					DisplayHelpText(_U('press_to_start'))
-					if(IsControlJustReleased(1, 38))then
+					if IsControlJustReleased(1, 38) then
 						tmp_action = availableActions[i]
 						RemoveAction(tmp_action)
 						FillActionTable(tmp_action)
 						disable_actions = true
 						TriggerServerEvent('szi_communityservice:completeService')
 						actionsRemaining = actionsRemaining - 1
-						if (tmp_action.type == "cleaning") then
+						if tmp_action.type == "cleaning" then
 							local cSCoords = GetOffsetFromEntityInWorldCoords(GetPlayerPed(PlayerId()), 0.0, 0.0, -5.0)
 							local vassouspawn = CreateObject(GetHashKey(cleaningmodel), cSCoords.x, cSCoords.y, cSCoords.z, 1, 1, 1)
 							local netid = ObjToNet(vassouspawn)
 							ESX.Streaming.RequestAnimDict("amb@world_human_janitor@male@idle_a", function()
-									TaskPlayAnim(PlayerPedId(), "amb@world_human_janitor@male@idle_a", "idle_a", 8.0, -8.0, -1, 0, 0, false, false, false)
-									AttachEntityToEntity(vassouspawn,GetPlayerPed(PlayerId()),GetPedBoneIndex(GetPlayerPed(PlayerId()), 28422),-0.005,0.0,0.0,360.0,360.0,0.0,1,1,0,1,0,1)
-									cleaning_net = netid
-								end)
+								TaskPlayAnim(PlayerPedId(), "amb@world_human_janitor@male@idle_a", "idle_a", 8.0, -8.0, -1, 0, 0, false, false, false)
+								AttachEntityToEntity(vassouspawn,GetPlayerPed(PlayerId()),GetPedBoneIndex(GetPlayerPed(PlayerId()), 28422),-0.005,0.0,0.0,360.0,360.0,0.0,1,1,0,1,0,1)
+								cleaning_net = netid
+							end)
 
-								ESX.SetTimeout(10000, function()
-									disable_actions = false
-									DetachEntity(NetToObj(cleaning_net), 1, 1)
-									DeleteEntity(NetToObj(cleaning_net))
-									cleaning_net = nil
-									ClearPedTasks(PlayerPedId())
-								end)
+							ESX.SetTimeout(10000, function()
+								disable_actions = false
+								DetachEntity(NetToObj(cleaning_net), 1, 1)
+								DeleteEntity(NetToObj(cleaning_net))
+								cleaning_net = nil
+								ClearPedTasks(PlayerPedId())
+							end)
 						end
 
-						if (tmp_action.type == "gardening") then
+						if tmp_action.type == "gardening" then
 							local cSCoords = GetOffsetFromEntityInWorldCoords(GetPlayerPed(PlayerId()), 0.0, 0.0, -5.0)
 							local spatulaspawn = CreateObject(GetHashKey(gardeningmodel), cSCoords.x, cSCoords.y, cSCoords.z, 1, 1, 1)
 							local netid = ObjToNet(spatulaspawn)
@@ -168,8 +162,6 @@ function RemoveAction(action)
 
 	if action_pos ~= -1 then
 		table.remove(availableActions, action_pos)
-	else
-		print("User tried to remove an unavailable action")
 	end
 end
 
@@ -193,7 +185,6 @@ function DisableViolentActions()
 	end
 
 	RemoveAllPedWeapons(playerPed, true)
-
 	DisableControlAction(2, 37, true) -- disable weapon wheel (Tab)
 	DisablePlayerFiring(playerPed,true) -- Disables firing all together if they somehow bypass inzone Mouse Disable
 
@@ -212,19 +203,18 @@ function ApplyPrisonerSkin()
 	if DoesEntityExist(playerPed) then
 		Citizen.CreateThread(function()
 			TriggerEvent('skinchanger:getSkin', function(skin)
-				if skin.sex == 0 then
-					TriggerEvent('skinchanger:loadClothes', skin, Config.Uniforms['prison_wear'].male)
-				else
-					TriggerEvent('skinchanger:loadClothes', skin, Config.Uniforms['prison_wear'].female)
-				end
-			end)
+			if skin.sex == 0 then
+				TriggerEvent('skinchanger:loadClothes', skin, Config.Uniforms['prison_wear'].male)
+			else
+				TriggerEvent('skinchanger:loadClothes', skin, Config.Uniforms['prison_wear'].female)
+			end
+		end)
 
 		SetPedArmour(playerPed, 0)
 		ClearPedBloodDamage(playerPed)
 		ResetPedVisibleDamage(playerPed)
 		ClearPedLastWeaponDamage(playerPed)
 		ResetPedMovementClipset(playerPed, 0)
-
 		end)
 	end
 end

@@ -4,7 +4,7 @@ Config.Locale = 'en' -- Language to be used
 
 Config.ServiceExtensionOnEscape	= 5 -- How many services a player's community service gets extended if they tries to escape
 
-Config.MaxDistance = 100
+Config.MaxDistance = 50
 
 Config.ServiceLocation 	= vector3(170.43, -990.70, 30.09) -- Where the player will be sent to do the community service
 Config.ReleaseLocation = vector3(427.33, -979.51, 30.20) -- Where the player will be returned after they finish community service
